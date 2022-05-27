@@ -1,30 +1,35 @@
-﻿using System;
-namespace Graphing;
+﻿namespace Graphing;
+
+using System;
+using System.Text;
+
 public sealed class BarGraph : Graph
 {
-	public BarGraph(double[]? values = null, uint height = 10) : base(values, height) { }
-	public override string ToString()
+	public BarGraph(params double[] data) : base(data)
 	{
-		if (Data.Count < 2) return base.ToString();
-		string output = "", lineReadonly = "{0}) ", line;
-		byte outLength = (byte)(Math.Truncate(AmountPerLengthPoint[^1]).ToString().Length + lineReadonly.Replace("{0}", "").Length);
-		for (uint i = HeightLength; i > 0; i--)
-		{
-			//Use Amount Per Length Point
-			line = lineReadonly.Replace("{0}", Math.Truncate(AmountPerLengthPoint[i]).ToString()); 
-			while (line.Length < outLength)
-				line += " "; 
-			for (int ii = 0; ii < Data.Count; ii++)
-				line += $".{(Data[ii].Length >= i ? "#" : ".")}";
-			output += $"{line}\n";		
-		}
-		line = lineReadonly.Replace("{0}", Math.Round(AmountPerLengthPoint[0]).ToString()); //
-			while (line.Length < outLength)
-				line += " ";
-		output += line;
-		for (uint i = (uint)Data.Count; i > 0; i--)
-			output += " T";
-		return output;
+
 	}
-	public override string BaseString() => base.ToString();
+	public override void DisplayContents()
+	{
+		int columnLength = (int)((float)Console.BufferWidth / (float)data.Count);
+		if (columnLength < 1)
+			throw new Exception($"{nameof(columnLength)} is less than 1 due to" +
+			$"Console Width of {Console.BufferWidth} is smaller than data" + 
+			$"count of {data.Count}");
+		int leftSideLength = (int)((float)columnLength / 2),
+			rightSideLength = columnLength - leftSideLength;
+		const char active = '@', inactive = '_', background = '.';
+		StringBuilder output = new();
+		for (int i = WindowHeight; i > 0; i--)
+		{
+			for (int ii = 0; i < data.Count; ii++)
+			{
+				output.Append(new string(background, leftSideLength));
+				output.Append(lengths[ii] <= i ? active : inactive);
+				output.Append(new string(background, rightSideLength));
+			}
+			output.Append('\n');
+		}
+		Console.WriteLine(output.ToString());
+	}
 }
